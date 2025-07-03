@@ -1,0 +1,126 @@
+// 全局样式
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+// Ant Design Vue 主题定制
+:root {
+  --ant-primary-color: #1890ff;
+  --ant-success-color: #52c41a;
+  --ant-warning-color: #faad14;
+  --ant-error-color: #ff4d4f;
+  --ant-info-color: #1890ff;
+}
+
+// 全局基础样式
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+// 布局相关
+.layout-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-header {
+  flex: none;
+}
+
+.layout-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+// 通用样式
+.page-container {
+  @apply p-4 bg-gray-50 min-h-full;
+}
+
+.card-container {
+  @apply bg-white rounded-lg shadow-sm p-4;
+}
+
+// 表格相关
+.table-toolbar {
+  @apply mb-3 flex justify-between items-center;
+}
+
+.table-search {
+  @apply flex gap-2 items-center flex-wrap;
+}
+
+// 表单相关
+.form-actions {
+  @apply flex gap-2 justify-end pt-3;
+}
+
+// 状态样式
+.status-active {
+  @apply text-green-600;
+}
+
+.status-inactive {
+  @apply text-red-600;
+}
+
+// 权限相关
+.permission-denied {
+  @apply opacity-50 pointer-events-none;
+}
+
+// 全局紧凑化样式覆盖
+:deep(.ant-card-body) {
+  padding: 12px 16px !important;
+}
+
+:deep(.ant-table-small) {
+  .ant-table-tbody > tr > td {
+    padding: 8px 12px !important;
+  }
+
+  .ant-table-thead > tr > th {
+    padding: 8px 12px !important;
+    background: #fafafa !important;
+  }
+}
+
+:deep(.ant-form-item) {
+  margin-bottom: 16px !important;
+}
+
+:deep(.ant-modal-body) {
+  padding: 16px 20px !important;
+}
+
+:deep(.ant-drawer-body) {
+  padding: 16px 20px !important;
+}
+
+// 紧凑模式下的按钮间距
+:deep(.ant-space-small) {
+  gap: 4px !important;
+}
+
+// 搜索表单紧凑化
+.search-form {
+  .ant-input,
+  .ant-select {
+    margin-bottom: 0 !important;
+  }
+}
+
+// 工具栏紧凑化
+.toolbar {
+  padding: 8px 0 !important;
+  margin-bottom: 0 !important;
+}

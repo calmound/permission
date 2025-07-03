@@ -1,0 +1,116 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Vue.js best practices and patterns for modern web applications
+globs: **/*.vue, **/*.ts, components/**/*
+---
+
+# Vue.js Best Practices
+
+## Component Structure
+- Use Composition API over Options API
+- Keep components small and focused
+- Use proper TypeScript integration
+- Implement proper props validation
+- Use proper emit declarations
+- Keep template logic minimal
+
+## Composition API
+- Use proper ref
+- Implement proper lifecycle hooks
+- Use composables for reusable logic
+- Keep setup function clean
+- Use proper computed properties
+- Implement proper watchers
+
+## State Management
+- Use Pinia for state management
+- Keep stores modular
+- Use proper state composition
+- Implement proper actions
+- Use proper getters
+- Handle async state properly
+
+## Performance
+- Use proper component lazy loading
+- Implement proper caching
+- Use proper computed properties
+- Avoid unnecessary watchers
+- Use proper v-show vs v-if
+- Implement proper key management
+
+## Routing
+- Use Vue Router properly
+- Implement proper navigation guards
+- Use proper route meta fields
+- Handle route params properly
+- Implement proper lazy loading
+- Use proper navigation methods
+
+## Forms
+- Use v-model properly
+- Implement proper validation
+- Handle form submission properly
+- Show proper loading states
+- Use proper error handling
+- Implement proper form reset
+
+## TypeScript Integration
+- Use proper component type definitions
+- Implement proper prop types
+- Use proper emit declarations
+- Handle proper type inference
+- Use proper composable types
+- Implement proper store types
+
+## Testing
+- Write proper unit tests
+- Implement proper component tests
+- Use Vue Test Utils properly
+- Test composables properly
+- Implement proper mocking
+- Test async operations
+
+## Best Practices
+- Follow Vue style guide
+- Use proper naming conventions
+- Keep components organized
+- Implement proper error handling
+- Use proper event handling
+- Document complex logic
+
+## Build and Tooling
+- Use Vite for development
+- Configure proper build setup
+- Use proper environment variables
+- Implement proper code splitting
+- Use proper asset handling
+
+## Styling and CSS Management
+
+* **Prefer Tailwind CSS** for styling
+* Avoid redundant custom styles; **leverage Tailwind's utility classes** as much as possible
+* Keep Tailwind classes scoped within components for style encapsulation
+* If Tailwind cannot meet complex styling needs, **supplement with Less**
+* Use Less for theming, color overrides, and variable customization (e.g., customizing Ant Design Vue theme variables)
+* Name style files using `.module.less` (if using CSS Modules) or `.less` for standard usage
+* Avoid global styles when possible; favor modular and scoped styling
+
+## UI Component Library (Ant Design Vue)
+
+* Use [Ant Design Vue (ant-design-vue)](https://www.antdv.com/) as the primary UI component library
+* **Use on-demand importing** to reduce bundle size
+* Prefer built-in components (e.g., form, table, modal) from the library instead of custom implementations
+* Style overrides should be handled through Less variables or `:deep` with Tailwind for minimal adjustments
+* Follow Ant Design Vue's [official best practices](https://www.antdv.com/components/overview/) when using components
+* For advanced use cases, **wrap and extend components** instead of modifying core styles directly
+* Maintain UI consistency across the app by using unified components (e.g., always use `a-button` rather than mixing buttons from different libraries)
+
+## npm
+- Use pnpm
+
+
+- Configure proper optimization 
