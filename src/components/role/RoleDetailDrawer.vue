@@ -3,7 +3,11 @@
     v-model:open="visible"
     title="角色详情"
     :width="800"
-    :bodyStyle="{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }"
+    :bodyStyle="{
+      padding: '20px',
+      height: 'calc(100vh - 120px)',
+      overflowY: 'auto',
+    }"
     placement="right"
     @close="handleClose"
   >
@@ -15,10 +19,7 @@
             <div class="text-gray-500">角色名称</div>
             <div class="font-medium">{{ roleInfo.name }}</div>
           </div>
-          <div>
-            <div class="text-gray-500">角色等级</div>
-            <a-rate :value="roleInfo.level" disabled />
-          </div>
+
           <div>
             <div class="text-gray-500">所属系统</div>
             <a-tag color="blue">{{ roleInfo.systemCode }}</a-tag>
@@ -167,50 +168,13 @@
           </a-tab-pane>
         </a-tabs>
       </a-card>
-
-      <!-- 操作按钮 -->
-      <div class="flex gap-2">
-        <a-button
-          type="primary"
-          @click="handleEdit"
-          v-permission="'role:update'"
-        >
-          <EditOutlined />
-          编辑角色
-        </a-button>
-        <a-button @click="handleManagePermissions" v-permission="'role:update'">
-          <SafetyOutlined />
-          配置权限
-        </a-button>
-        <a-button @click="handleManageMembers" v-permission="'role:update'">
-          <UserOutlined />
-          管理成员
-        </a-button>
-        <a-popconfirm
-          title="确定删除此角色吗？删除后无法恢复！"
-          @confirm="handleDelete"
-          v-permission="'role:delete'"
-        >
-          <a-button danger>
-            <DeleteOutlined />
-            删除角色
-          </a-button>
-        </a-popconfirm>
-      </div>
     </div>
   </a-drawer>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import {
-  EditOutlined,
-  SafetyOutlined,
-  DeleteOutlined,
-  UserOutlined,
-  MenuOutlined,
-  ApiOutlined,
-} from "@ant-design/icons-vue";
+import { MenuOutlined, ApiOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import type { Role, User, Resource } from "../../types";
 import { roleApi } from "@api/role";
@@ -220,14 +184,11 @@ import { formatDate } from "@utils/dayjs";
 interface Props {
   open: boolean;
   roleId?: string;
+  systemCode?: string;
 }
 
 interface Emits {
   (e: "update:open", value: boolean): void;
-  (e: "edit", role: Role): void;
-  (e: "manage-permissions", role: Role): void;
-  (e: "manage-members", role: Role): void;
-  (e: "refresh"): void;
 }
 
 const props = defineProps<Props>();
@@ -303,7 +264,7 @@ watch(
   () => props.open,
   (newVal) => {
     visible.value = newVal;
-    if (newVal && props.roleId) {
+    if (newVal && props.roleId && props.systemCode) {
       loadRoleDetail();
     }
   }
@@ -316,11 +277,15 @@ watch(visible, (newVal) => {
 });
 
 const loadRoleDetail = async () => {
-  if (!props.roleId) return;
+  if (!props.roleId || !props.systemCode) return;
 
   loading.value = true;
   try {
-    const response = await roleApi.getRole(props.roleId);
+    // 使用系统角色API
+    const response = await roleApi.getSystemRole(
+      props.systemCode,
+      props.roleId
+    );
     roleInfo.value = response;
 
     // 加载权限配置
@@ -331,6 +296,7 @@ const loadRoleDetail = async () => {
     ]);
   } catch (error) {
     message.error("加载角色详情失败");
+    console.error("角色详情加载错误:", error);
   } finally {
     loading.value = false;
   }
@@ -359,7 +325,7 @@ const transformMenuData = (resources: Resource[]): any[] => {
 };
 
 const loadRolePermissions = async () => {
-  if (!props.roleId) return;
+  if (!props.roleId || !props.systemCode) return;
 
   try {
     permissionLoading.value = true;
@@ -373,11 +339,14 @@ const loadRolePermissions = async () => {
 };
 
 const loadRoleMembers = async () => {
-  if (!props.roleId) return;
+  if (!props.roleId || !props.systemCode) return;
 
   try {
     memberLoading.value = true;
-    const members = await roleApi.getRoleMembers(props.roleId);
+    const members = await roleApi.getSystemRoleMembers(
+      props.systemCode,
+      props.roleId
+    );
     roleMembers.value = members;
   } catch (error) {
     console.error("加载角色成员失败:", error);
@@ -398,36 +367,5 @@ const handleClose = () => {
   checkedPermissions.value = [];
   menuTreeData.value = [];
   roleMembers.value = [];
-};
-
-const handleEdit = () => {
-  if (roleInfo.value) {
-    emit("edit", roleInfo.value);
-  }
-};
-
-const handleManagePermissions = () => {
-  if (roleInfo.value) {
-    emit("manage-permissions", roleInfo.value);
-  }
-};
-
-const handleManageMembers = () => {
-  if (roleInfo.value) {
-    emit("manage-members", roleInfo.value);
-  }
-};
-
-const handleDelete = async () => {
-  if (!roleInfo.value) return;
-
-  try {
-    await roleApi.deleteRole(roleInfo.value.id);
-    message.success("角色删除成功");
-    visible.value = false;
-    emit("refresh");
-  } catch (error) {
-    message.error("角色删除失败");
-  }
 };
 </script>

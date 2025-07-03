@@ -1,42 +1,49 @@
 <template>
   <div class="role-list-container">
-    <!-- 系统选择器 -->
-    <div class="mb-4 flex justify-between items-center">
-      <div class="flex items-center space-x-4">
-        <label class="text-sm font-medium text-gray-700">管理系统:</label>
-        <SystemSelector
-          v-model="currentSystemCode"
-          mode="manageable"
-          :width="'200px'"
-          placeholder="请选择系统"
-          @change="handleSystemChange"
-        />
-      </div>
-    </div>
-
     <!-- 搜索和操作区域 -->
-    <a-card class="card-container mb-4 flex-shrink-0" v-if="currentSystemCode">
+    <a-card class="card-container mb-4 flex-shrink-0">
       <div class="table-toolbar">
         <!-- 搜索表单 -->
         <div class="table-search">
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium text-gray-700">筛选系统:</label>
+            <SystemSelector
+              v-model="currentSystemCode"
+              mode="manageable"
+              :width="'180px'"
+              placeholder="选择要管理的系统"
+              @change="handleSystemChange"
+            />
+          </div>
+
           <a-input
             v-model:value="searchForm.keyword"
             placeholder="搜索角色名称"
             style="width: 240px"
             size="small"
             @press-enter="handleSearch"
+            :disabled="!currentSystemCode"
           >
             <template #prefix>
               <SearchOutlined />
             </template>
           </a-input>
 
-          <a-button type="primary" size="small" @click="handleSearch">
+          <a-button
+            type="primary"
+            size="small"
+            @click="handleSearch"
+            :disabled="!currentSystemCode"
+          >
             <SearchOutlined />
             搜索
           </a-button>
 
-          <a-button size="small" @click="handleReset">
+          <a-button
+            size="small"
+            @click="handleReset"
+            :disabled="!currentSystemCode"
+          >
             <ReloadOutlined />
             重置
           </a-button>
@@ -60,10 +67,23 @@
           </a-button>
         </div>
       </div>
+
+      <!-- 说明文字 -->
+      <div
+        v-if="!currentSystemCode"
+        class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+      >
+        <div class="text-sm text-blue-800">
+          💡 请先选择要管理的系统，然后查看该系统下的角色列表
+        </div>
+      </div>
     </a-card>
 
     <!-- 角色表格 -->
-    <a-card class="card-container flex-1 flex flex-col">
+    <a-card
+      class="card-container flex-1 flex flex-col"
+      v-if="currentSystemCode"
+    >
       <a-table
         :columns="columns"
         :data-source="dataSource"
@@ -85,24 +105,13 @@
             </div>
           </template>
 
-          <!-- 等级列 -->
-          <template v-else-if="column.key === 'level'">
-            <a-rate :value="record.level" disabled size="small" />
-          </template>
-
           <!-- 成员数量列 -->
           <template v-else-if="column.key === 'members'">
             <a-badge
               :count="record.members || 0"
               :number-style="{ backgroundColor: '#52c41a' }"
             >
-              <a-button
-                type="link"
-                size="small"
-                @click="handleViewMembers(record)"
-              >
-                查看成员
-              </a-button>
+              <span class="text-sm">{{ record.members || 0 }} 人</span>
             </a-badge>
           </template>
 
@@ -142,22 +151,6 @@
               <a-button
                 type="link"
                 size="small"
-                @click="handleEditPermissions(record)"
-              >
-                配置权限
-              </a-button>
-
-              <a-button
-                type="link"
-                size="small"
-                @click="handleManageMembers(record)"
-              >
-                管理成员
-              </a-button>
-
-              <a-button
-                type="link"
-                size="small"
                 danger
                 @click="handleDelete(record)"
               >
@@ -173,10 +166,7 @@
     <RoleDetailDrawer
       v-model:open="detailDrawerVisible"
       :role-id="selectedRoleId"
-      @edit="handleEditFromDetail"
-      @manage-permissions="handleManagePermissionsFromDetail"
-      @manage-members="handleManageMembersFromDetail"
-      @refresh="loadData"
+      :system-code="currentSystemCode"
     />
 
     <!-- 角色编辑弹窗 -->
@@ -184,20 +174,6 @@
       v-model:open="editModalVisible"
       :role="selectedRole"
       @success="handleEditSuccess"
-    />
-
-    <!-- 权限配置弹窗 -->
-    <RolePermissionModal
-      v-model:open="permissionModalVisible"
-      :role="selectedRole"
-      @success="handlePermissionSuccess"
-    />
-
-    <!-- 成员管理弹窗 -->
-    <RoleMemberModal
-      v-model:open="memberModalVisible"
-      :role="selectedRole"
-      @success="handleMemberSuccess"
     />
   </div>
 </template>
@@ -218,8 +194,6 @@ import { roleApi } from "@/api/role";
 import { formatDate } from "@/utils/dayjs";
 import RoleDetailDrawer from "@/components/role/RoleDetailDrawer.vue";
 import RoleEditModal from "@/components/role/RoleEditModal.vue";
-import RolePermissionModal from "@/components/role/RolePermissionModal.vue";
-import RoleMemberModal from "@/components/role/RoleMemberModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -234,8 +208,6 @@ const selectedRoleId = ref<string>("");
 // 弹窗控制
 const detailDrawerVisible = ref(false);
 const editModalVisible = ref(false);
-const permissionModalVisible = ref(false);
-const memberModalVisible = ref(false);
 
 const searchForm = reactive({
   keyword: "",
@@ -259,12 +231,6 @@ const columns = [
     width: 200,
   },
   {
-    title: "等级",
-    dataIndex: "level",
-    key: "level",
-    width: 100,
-  },
-  {
     title: "成员数",
     dataIndex: "members",
     key: "members",
@@ -285,7 +251,7 @@ const columns = [
   {
     title: "操作",
     key: "actions",
-    width: 260,
+    width: 160,
     fixed: "right",
   },
 ];
@@ -346,6 +312,8 @@ watch(
 );
 
 const loadData = async () => {
+  if (!currentSystemCode.value) return;
+
   loading.value = true;
   try {
     const params = {
@@ -353,7 +321,10 @@ const loadData = async () => {
       cursor: pagination.current > 1 ? `page_${pagination.current}` : undefined,
       limit: pagination.pageSize,
     };
-    const response = await roleApi.getRoles(params);
+    const response = await roleApi.getSystemRoles(
+      currentSystemCode.value,
+      params
+    );
     dataSource.value = response.items || [];
     pagination.total = response.total || 0;
   } catch (error) {
@@ -401,50 +372,17 @@ const handleCreate = () => {
   editModalVisible.value = true;
 };
 
-const handleView = (record: Role) => {
+const handleView = (record: SystemRole) => {
   selectedRoleId.value = record.id;
   detailDrawerVisible.value = true;
 };
 
-const handleEdit = (record: Role) => {
+const handleEdit = (record: SystemRole) => {
   selectedRole.value = record;
   editModalVisible.value = true;
 };
 
-const handleEditFromDetail = (role: Role) => {
-  detailDrawerVisible.value = false;
-  selectedRole.value = role;
-  editModalVisible.value = true;
-};
-
-const handleManagePermissionsFromDetail = (role: Role) => {
-  detailDrawerVisible.value = false;
-  selectedRole.value = role;
-  permissionModalVisible.value = true;
-};
-
-const handleManageMembersFromDetail = (role: Role) => {
-  detailDrawerVisible.value = false;
-  selectedRole.value = role;
-  memberModalVisible.value = true;
-};
-
-const handleEditPermissions = (record: Role) => {
-  selectedRole.value = record;
-  permissionModalVisible.value = true;
-};
-
-const handleViewMembers = (record: Role) => {
-  selectedRoleId.value = record.id;
-  detailDrawerVisible.value = true;
-};
-
-const handleManageMembers = (record: Role) => {
-  selectedRole.value = record;
-  memberModalVisible.value = true;
-};
-
-const handleDelete = (record: Role) => {
+const handleDelete = (record: SystemRole) => {
   Modal.confirm({
     title: "确认删除",
     content: `确定要删除角色"${record.name}"吗？删除后将无法恢复。`,
@@ -465,16 +403,6 @@ const handleDelete = (record: Role) => {
 // 处理成功回调
 const handleEditSuccess = () => {
   editModalVisible.value = false;
-  loadData();
-};
-
-const handlePermissionSuccess = () => {
-  permissionModalVisible.value = false;
-  loadData();
-};
-
-const handleMemberSuccess = () => {
-  memberModalVisible.value = false;
   loadData();
 };
 </script>
