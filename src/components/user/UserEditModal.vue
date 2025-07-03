@@ -254,12 +254,7 @@
             <a-button
               size="small"
               type="text"
-              @click="
-                showRolePermissions({
-                  selectedRoleId: role.id,
-                  availableRoles: [role],
-                })
-              "
+              @click="showRolePermissionsFromDetail(role)"
             >
               查看权限
             </a-button>
@@ -474,12 +469,15 @@ const handleSystemToggle = async (
   system: SystemPermissionConfig,
   enabled: boolean
 ) => {
+  console.log(`[UserEditModal] 系统开关切换:`, system.code, enabled);
   system.enabled = enabled;
   if (enabled) {
     // 启用系统时加载可用角色
+    console.log(`[UserEditModal] 启用系统，加载角色:`, system.code);
     await loadSystemRoles(system);
   } else {
     // 禁用系统时清空角色选择
+    console.log(`[UserEditModal] 禁用系统，清空角色:`, system.code);
     system.selectedRoleId = null;
     system.availableRoles = [];
   }
@@ -495,11 +493,15 @@ const handleRoleChange = (
 const loadSystemRoles = async (system: SystemPermissionConfig) => {
   try {
     system.rolesLoading = true;
+    console.log(`[UserEditModal] 开始加载系统角色:`, system.code);
     const response = await roleApi.getSystemRoles(system.code);
+    console.log(`[UserEditModal] 角色加载成功:`, response);
     system.availableRoles = response.items || [];
+    console.log(`[UserEditModal] 设置角色列表:`, system.availableRoles);
   } catch (error) {
     console.error(`加载系统 ${system.code} 角色失败:`, error);
     message.error(`加载${system.name}角色失败`);
+    system.availableRoles = [];
   } finally {
     system.rolesLoading = false;
   }
@@ -521,6 +523,11 @@ const showRolePermissions = (system: SystemPermissionConfig) => {
       permissionModalVisible.value = true;
     }
   }
+};
+
+const showRolePermissionsFromDetail = (role: SystemRole) => {
+  selectedRole.value = role;
+  permissionModalVisible.value = true;
 };
 
 const getRoleName = (system: SystemPermissionConfig) => {

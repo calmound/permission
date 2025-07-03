@@ -1,7 +1,7 @@
 <template>
   <div class="user-list-container">
     <!-- 搜索和操作区域 -->
-    <a-card class="card-container mb-4 flex-shrink-0">
+    <a-card class="flex-shrink-0 mb-4 card-container">
       <div class="table-toolbar">
         <!-- 搜索表单 -->
         <div class="table-search">
@@ -92,7 +92,7 @@
     </a-card>
 
     <!-- 用户表格 -->
-    <a-card class="card-container flex-1 flex flex-col">
+    <a-card class="flex flex-col flex-1 card-container">
       <a-table
         :columns="columns"
         :data-source="users"
@@ -112,7 +112,7 @@
                 {{ record.username?.charAt(0).toUpperCase() }}
               </a-avatar>
               <div>
-                <div class="font-medium text-sm">{{ record.username }}</div>
+                <div class="text-sm font-medium">{{ record.username }}</div>
                 <div class="text-xs text-gray-500">
                   {{ record.nickname }}
                 </div>
@@ -139,7 +139,7 @@
             <a-tag v-if="record.systemCode" color="blue" size="small">
               {{ getSystemName(record.systemCode) }}
             </a-tag>
-            <span v-else class="text-gray-400 text-xs">未绑定</span>
+            <span v-else class="text-xs text-gray-400">未绑定</span>
           </template>
 
           <!-- 角色列 -->
@@ -173,7 +173,7 @@
             <span v-if="record.lastLoginAt" class="text-xs">
               {{ formatTime(record.lastLoginAt) }}
             </span>
-            <span v-else class="text-gray-400 text-xs">从未登录</span>
+            <span v-else class="text-xs text-gray-400">从未登录</span>
           </template>
 
           <!-- 操作列 -->
